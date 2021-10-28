@@ -47,7 +47,7 @@ class RecipeListActivity : AppCompatActivity() {
 
         val context = this
         listView.setOnItemClickListener { _, _, position, _ ->
-            val selectedRecipe = recipeList[position]
+            val selectedRecipe = adapter.getItem(position)
             val detailIntent = RecipeDetailActivity.newIntent(context, selectedRecipe)
             startActivity(detailIntent)
         }
@@ -67,7 +67,7 @@ class RecipeListActivity : AppCompatActivity() {
             override fun onQueryTextChange(newText: String?): Boolean {
                 Log.i("onQueryTextChange", newText.toString())
                 adapter.filter.filter(newText)
-                adapter.notifyDataSetChanged()
+//                adapter.notifyDataSetChanged()
                 Log.i("onQueryTextChange", "Filtered")
                 return true
             }
