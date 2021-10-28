@@ -26,7 +26,7 @@ class Recipe(
                 // Get Recipe objects from data
                 (0 until recipes.length()).mapTo(recipeList) {
                     Recipe(
-                        recipes.getJSONObject(it).getString("title"),
+                        cleanTitle(recipes.getJSONObject(it).getString("title")),
                         recipes.getJSONObject(it).getString("description"),
                         recipes.getJSONObject(it).getString("image"),
                         recipes.getJSONObject(it).getString("url"),
@@ -39,6 +39,18 @@ class Recipe(
             }
 
             return recipeList
+        }
+
+        /* Special symbols are observed to be encased between '&' and ';' characters
+        *  This function removes the special characters
+        * */
+        private fun cleanTitle(title: String): String {
+            return if(title.contains('&') && title.contains(';')) {
+                val re = Regex("&.*?;")
+                re.replace(title, "")
+            } else {
+                title
+            }
         }
 
         private fun loadJsonFromAsset(filename: String, context: Context): String? {
