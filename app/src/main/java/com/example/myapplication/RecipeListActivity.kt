@@ -8,7 +8,7 @@ import android.widget.*
 
 class RecipeListActivity : AppCompatActivity() {
 
-    private lateinit var adapter: ArrayAdapter<*>
+    private lateinit var adapter: RecipeAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,13 +24,14 @@ class RecipeListActivity : AppCompatActivity() {
         Log.i("TESTING1", "GOING TO RUN RECIPELIST")
         val recipeList = Recipe.getRecipesFromFile("real_ingredients_2.json", this)
         Log.i("TESTING2", "DID RECIPELISTRUN")
+
 //        val listItems = arrayOfNulls<String>(recipeList.size)
 //
 //        for (i in 0 until recipeList.size){
 //            val recipe = recipeList[i]
 //            listItems[i] = recipe.title
 //        }
-//
+
 //        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems)
         val listView = findViewById<ListView>(R.id.lv_listView)
 //        val emptyTextView = findViewById<TextView>(R.id.tv_emptyTextView)
@@ -41,7 +42,7 @@ class RecipeListActivity : AppCompatActivity() {
 //        }
 //        listView.emptyView = emptyTextView
 
-        val adapter = RecipeAdapter(this, recipeList)
+        adapter = RecipeAdapter(this, recipeList)
         listView.adapter = adapter
 
         val context = this
@@ -64,7 +65,10 @@ class RecipeListActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                Log.i("onQueryTextChange", newText.toString())
                 adapter.filter.filter(newText)
+                adapter.notifyDataSetChanged()
+                Log.i("onQueryTextChange", "Filtered")
                 return true
             }
         })

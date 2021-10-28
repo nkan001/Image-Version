@@ -4,25 +4,25 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.core.content.res.ResourcesCompat
-import javax.sql.CommonDataSource
 import com.squareup.picasso.Picasso
+import kotlin.collections.ArrayList
 
-class RecipeAdapter(private val context: Context,
-                    private val dataSource: ArrayList<Recipe>): BaseAdapter()
+class RecipeAdapter(private val contex: Context, private val dataSource: ArrayList<Recipe>): ArrayAdapter<Recipe>(contex, android.R.layout.simple_list_item_1, dataSource)
 {
 
-    private val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    private val inflater: LayoutInflater = contex.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    var filtered = ArrayList<Recipe>()
 
     override fun getCount(): Int {
-        return dataSource.size
+        return if (filtered.size==0) dataSource.size
+        else filtered.size
     }
 
-    override fun getItem(position: Int): Any {
-        return dataSource[position]
+    override fun getItem(position: Int): Recipe {
+        return if (filtered.size==0) dataSource[position]
+        else filtered[position]
     }
 
     override fun getItemId(position: Int): Long {
@@ -49,18 +49,51 @@ class RecipeAdapter(private val context: Context,
 
         Picasso.get().load(recipe.imageUrl).placeholder(R.mipmap.ic_launcher).into(thumbnailImageView)
 
-        val titleTypeFace = ResourcesCompat.getFont(context, R.font.josefinsans_bold)
+        val titleTypeFace = ResourcesCompat.getFont(contex, R.font.josefinsans_bold)
         titleTextView.typeface = titleTypeFace
 
-        val subtitleTypeFace = ResourcesCompat.getFont(context, R.font.josefinsans_semibolditalic)
+        val subtitleTypeFace = ResourcesCompat.getFont(contex, R.font.josefinsans_semibolditalic)
         subtitleTextView.typeface = subtitleTypeFace
 
-        val detailTypeFace = ResourcesCompat.getFont(context, R.font.quicksand_bold)
+        val detailTypeFace = ResourcesCompat.getFont(contex, R.font.quicksand_bold)
         detailTextView.typeface = detailTypeFace
 
         return rowView
     }
 
+    override fun getFilter() = filter
+
+    private var filter: Filter = object : Filter() {
+
+        override fun performFiltering(constraint: CharSequence?): FilterResults {
+            val results = FilterResults()
+
+            val query = if (constraint != null && constraint.isNotEmpty()) autocomplete(constraint.toString())
+            else arrayListOf()
+
+            results.values = query
+            results.count = query.size
+
+            return results
+        }
+
+        private fun autocomplete(input: String): ArrayList<Recipe> {
+            val results = arrayListOf<Recipe>()
+
+            for (recip in dataSource) {
+                if (recip.title.toLowerCase().contains(input.toLowerCase())) results.add(recip)
+            }
+
+            return results
+        }
+
+        override fun publishResults(constraint: CharSequence?, results: Filter.FilterResults) {
+            filtered = results.values as ArrayList<Recipe>
+            notifyDataSetChanged() //notifyDataSetInvalidated() //
+        }
+
+        override fun convertResultToString(result: Any) = (result as Recipe).title
+    }
 
 
 }
