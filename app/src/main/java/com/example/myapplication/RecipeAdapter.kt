@@ -81,7 +81,12 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
             val results = arrayListOf<Recipe>()
 
             for (recip in dataSource) {
-                if (recip.title.toLowerCase().contains(input.toLowerCase())) results.add(recip)
+                if (recip.title.toLowerCase().contains(input.toLowerCase()))
+                {results.add(recip)}
+                else if (recip.description.toLowerCase().contains(input.toLowerCase()))
+                {results.add(recip)}
+                else if (recip.label.toLowerCase().contains(input.toLowerCase()))
+                {results.add(recip)}
             }
 
             return results
