@@ -11,8 +11,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.ml.MobilenetV110224Quant
 import org.tensorflow.lite.DataType
