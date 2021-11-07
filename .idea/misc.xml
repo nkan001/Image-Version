@@ -5,6 +5,7 @@
       <map>
         <entry key="../WORKS 4 images embeddedwebview real/app/src/main/res/layout/activity_recipe_list.xml" value="0.21306306306306305" />
         <entry key="../WORKS 4 images embeddedwebview real/app/src/main/res/layout/list_item_recipe.xml" value="0.21306306306306305" />
+        <entry key="..\:/Users/carlo/Desktop/CZ4125/Capstone Project/Image-Version/app/src/main/res/layout/activity_recipe_list.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.34954954954954953" />
         <entry key="app/src/main/res/drawable/ic_dashboard_black_24dp.xml" value="0.3256756756756757" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.335" />
@@ -19,7 +20,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
