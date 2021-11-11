@@ -5,18 +5,21 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.beust.klaxon.JsonObject
+// https://chaquo.com/chaquopy/doc/current/android.html#android-source
+import com.chaquo.python.PyObject
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.example.myapplication.databinding.ActivityMainBinding
-import com.example.myapplication.ml.MobilenetV110224Quant
-import com.example.myapplication.ml.Xception
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.io.ByteArrayOutputStream
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,9 +29,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // https://www.youtube.com/watch?v=27kdAqDUpcE&ab_channel=ProgrammingFever
+        if (! Python.isStarted()) {
+            Python.start(AndroidPlatform(this));
+        }
+        var py: Python = Python.getInstance();
+        var pyo: PyObject = py.getModule("predict")
+        print("Got the python module $pyo")
 
         imgview = findViewById(R.id.imageView)
         val fileName = "labels.txt"
@@ -36,39 +46,26 @@ class MainActivity : AppCompatActivity() {
         val labelsList = inputString.split("\n")
 
         var tv:TextView = findViewById(R.id.textView)
-
-
         var select: Button = findViewById(R.id.button)
         select.setOnClickListener(View.OnClickListener {
             var intent: Intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(intent, 100)
-
             tv.setText("Click on Predict!")
         })
 
         var predict:Button = findViewById(R.id.button2)
         predict.setOnClickListener(View.OnClickListener {
+            val imageString: String= getImageString(bitmap)
+            val args = JsonObject()
+            args.put("inputs", imageString)
+            args.put("resume", "model_best.pth")
+            args.put("num_classes", 6)
+            args.put("knn_path", "knns.pkl")
 
-            var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 299, 299, true)
-            val model = Xception.newInstance(this)
-            var tImage = TensorImage(DataType.FLOAT32)
-            tImage.load(resized)
-            var byteBuffer = tImage.tensorBuffer
+            // Runs model inference and gets result.
+            val obj: PyObject = pyo.callAttr("predict",args.toString())
 
-
-        // Runs model inference and gets result.
-            val outputs = model.process(byteBuffer)
-            val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-
-            var max = getMax(outputFeature0.floatArray)
-
-
-            Log.i(max.toString(), "This is the max value index:")
-            tv.setText(labelsList[max])
-
-// Releases model resources if no longer used.
-            model.close()
         })
 
         var goToRecipes:Button = findViewById(R.id.button3)
@@ -76,6 +73,14 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, RecipeListActivity::class.java)
             startActivity(intent)
         })
+    }
+
+    private fun getImageString(bitmap: Bitmap): String{
+        var baos: ByteArrayOutputStream = ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        val imageBytes: ByteArray = baos.toByteArray()
+        val imageString:String = android.util.Base64.encodeToString(imageBytes, Base64.DEFAULT)
+        return imageString
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

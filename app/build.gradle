@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'com.chaquo.python'
 }
 
 android {
@@ -12,7 +13,26 @@ android {
         targetSdk 31
         versionCode 1
         versionName "1.0"
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+//        sourceSets {
+//            main {
+//                python.srcDir "app/src/main/python/pretrainedmodels_pytorch"
+//            }
+//        }
+        python {
+            buildPython "/usr/bin/python3" // 3.8.9
+            pip {
+                // A directory containing a setup.py, relative to the project
+                // directory (must contain at least one slash):
+                install "src/main/python/pretrainedmodels_pytorch"
 
+                // "-r"` followed by a requirements filename, relative to the
+                // app directory
+                install "-r", "src/main/python/requirements.txt"
+            }
+        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
