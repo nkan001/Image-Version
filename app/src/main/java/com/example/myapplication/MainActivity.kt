@@ -37,17 +37,14 @@ class MainActivity : AppCompatActivity() {
             Python.start(AndroidPlatform(this));
         }
         var py: Python = Python.getInstance();
-        var pyo: PyObject = py.getModule("predict")
-        print("Got the python module $pyo")
+        var pyo: PyObject = py.getModule("predict")//"hello")
+        Log.d("DEBUG", "Got the python module $pyo")
 
         imgview = findViewById(R.id.imageView)
-        val fileName = "labels.txt"
-        val inputString = application.assets.open(fileName).bufferedReader().use {it.readText()}
-        val labelsList = inputString.split("\n")
-
         var tv:TextView = findViewById(R.id.textView)
         var select: Button = findViewById(R.id.button)
         select.setOnClickListener(View.OnClickListener {
+            Log.d("DEBUG","UPLOAD WAS CLICKED")
             var intent: Intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(intent, 100)
@@ -56,16 +53,13 @@ class MainActivity : AppCompatActivity() {
 
         var predict:Button = findViewById(R.id.button2)
         predict.setOnClickListener(View.OnClickListener {
+            Log.d("DEBUG","PREDICT WAS CLICKED")
             val imageString: String= getImageString(bitmap)
-            val args = JsonObject()
-            args.put("inputs", imageString)
-            args.put("resume", "model_best.pth")
-            args.put("num_classes", 6)
-            args.put("knn_path", "knns.pkl")
 
+            Log.d("DEBUG", "CALLING PREDICT NOW")
             // Runs model inference and gets result.
-            val obj: PyObject = pyo.callAttr("predict",args.toString())
-
+            val obj: PyObject = pyo.callAttr("predict",imageString) // "helloworld"
+            Log.d("DEBUG", "THE OBJ IS $obj")
         })
 
         var goToRecipes:Button = findViewById(R.id.button3)
@@ -74,7 +68,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         })
     }
-
     private fun getImageString(bitmap: Bitmap): String{
         var baos: ByteArrayOutputStream = ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
@@ -91,17 +84,5 @@ class MainActivity : AppCompatActivity() {
         var uri: Uri?= data?.data
         bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
 
-    }
-
-    fun getMax(arr:FloatArray): Int {
-        var ind = 0
-        var min = 0.0f
-        for (i in 0..5) {
-            if (arr[i] > min) {
-                ind = i
-                min = arr[i]
-            }
-        }
-        return ind
     }
 }

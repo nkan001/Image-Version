@@ -619,6 +619,7 @@ def nasnetamobile(num_classes=1000, pretrained='imagenet'):
     r"""NASNetALarge model architecture from the
     `"NASNet" <https://arxiv.org/abs/1707.07012>`_ paper.
     """
+    print("HELOOOOOOO")
     if pretrained:
         settings = pretrained_settings['nasnetamobile'][pretrained]
         if num_classes != settings['num_classes']:
