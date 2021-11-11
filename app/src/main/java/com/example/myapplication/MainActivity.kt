@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.ml.MobilenetV110224Quant
+import com.example.myapplication.ml.Xception
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
@@ -48,24 +49,21 @@ class MainActivity : AppCompatActivity() {
 
         var predict:Button = findViewById(R.id.button2)
         predict.setOnClickListener(View.OnClickListener {
-            var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 224,224, true)
-            val model = MobilenetV110224Quant.newInstance(this)
 
-// Creating inputs
-            val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.UINT8)
+            var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 299, 299, true)
+            val model = Xception.newInstance(this)
+            var tImage = TensorImage(DataType.FLOAT32)
+            tImage.load(resized)
+            var byteBuffer = tImage.tensorBuffer
 
-            var tbuffer = TensorImage.fromBitmap(resized)
-            var byteBuffer = tbuffer.buffer
 
-            inputFeature0.loadBuffer(byteBuffer)
-
-// Runs model and gets the list of probabilities as result
-            val outputs = model.process(inputFeature0)
-            Log.i(outputs.toString(), "This is the outputs:")
+        // Runs model inference and gets result.
+            val outputs = model.process(byteBuffer)
             val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
-
             var max = getMax(outputFeature0.floatArray)
+
+
             Log.i(max.toString(), "This is the max value index:")
             tv.setText(labelsList[max])
 
@@ -93,7 +91,7 @@ class MainActivity : AppCompatActivity() {
     fun getMax(arr:FloatArray): Int {
         var ind = 0
         var min = 0.0f
-        for (i in 0..1000) {
+        for (i in 0..5) {
             if (arr[i] > min) {
                 ind = i
                 min = arr[i]
