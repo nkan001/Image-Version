@@ -1,8 +1,12 @@
 package com.example.myapplication
 
 import android.content.Context
+import android.util.JsonReader
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 
 
 class Recipe(
@@ -10,7 +14,15 @@ class Recipe(
     val description: String,
     val imageUrl: String,
     val instructionUrl: String,
-    val label: String) {
+    val label: String,
+    val ratings: Double,
+    val ratingCounts: Int,
+    val eggFree: Boolean,
+    val dairyFree: Boolean,
+    val nutFree: Boolean,
+    val shellFishFree: Boolean,
+    val vegetarian: Boolean,
+    val vegan: Boolean) {
 
     companion object {
 
@@ -19,7 +31,7 @@ class Recipe(
 
             try {
                 // Load data
-                val jsonString = loadJsonFromAsset("real_ingredients_2.json", context)
+                val jsonString = loadJsonFromAsset(filename, context)
                 val json = JSONObject(jsonString)
                 val recipes = json.getJSONArray("recipes")
 
@@ -30,7 +42,15 @@ class Recipe(
                         recipes.getJSONObject(it).getString("description"),
                         recipes.getJSONObject(it).getString("image"),
                         recipes.getJSONObject(it).getString("url"),
-                        recipes.getJSONObject(it).getString("dietLabel")
+                        recipes.getJSONObject(it).getString("dietLabel"),
+                        recipes.getJSONObject(it).getDouble("ratings"),
+                        recipes.getJSONObject(it).getInt("rating_counts"),
+                        recipes.getJSONObject(it).getBoolean("egg_free"),
+                        recipes.getJSONObject(it).getBoolean("dairy_free"),
+                        recipes.getJSONObject(it).getBoolean("nut_free"),
+                        recipes.getJSONObject(it).getBoolean("shellfish_free"),
+                        recipes.getJSONObject(it).getBoolean("vegetarian"),
+                        recipes.getJSONObject(it).getBoolean("vegan")
                     )
                 }
 

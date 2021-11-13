@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,10 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
 
     private val inflater: LayoutInflater = contex.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     var filtered = ArrayList<Recipe>()
+
+    fun setDataSource(newDataSource: ArrayList<Recipe>) {
+        filtered = newDataSource
+    }
 
     override fun getCount(): Int {
         return if (filtered.size==0) dataSource.size
@@ -45,7 +50,7 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
 
         titleTextView.text = recipe.title
         subtitleTextView.text = recipe.description
-        detailTextView.text = recipe.label
+        detailTextView.text = recipe.ratings.toString()
 
         Picasso.get().load(recipe.imageUrl).placeholder(R.mipmap.ic_launcher).into(thumbnailImageView)
 
