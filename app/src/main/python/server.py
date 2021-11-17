@@ -9,8 +9,14 @@ import requests
 from PIL import Image
 import io
 import json
+import pickle
 app = Flask(__name__)
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+with open(os.path.join(dir_path, "maincat2id.pkl"), "rb") as f:
+    maincat2id = pickle.load(f)
+with open(os.path.join(dir_path, "id2subcat2id.pkl"), "rb") as f:
+    id2subcat2id = pickle.load(f)
 
 @app.route('/predict', methods=['POST'])
 def predict_request():
@@ -26,25 +32,26 @@ def predict_request():
         img_bytes = request.data
 
         print("IMG_BYTES", len(img_bytes), type(img_bytes))
-        args = vars(parser.parse_args())
-        args_custom = {
-            "resume": r"/Users/phoebezhouhuixin/Desktop/i2r_results/epochs100_lr0.001_20211029062326/model_best.pth",
-            "num_classes": 6,
-            "knn_path": r"./logs/knn/20211108055850/knns.pkl"
-        }
-        args.update(args_custom)
-        args = argparse.Namespace(**args)
-        maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes, args = args)
-        return jsonify({
-            'maincat_id': maincat_id, 'maincat_name': maincat_name,
-            'subcat_id': subcat_id, 'subcat_name': subcat_name,
-        })
+        maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
+        # return jsonify({
+        #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
+        #     'subcat_id': subcat_id, 'subcat_name': subcat_name,
+        # })
+        json_path = os.path.join(dir_path, "all_recipes.json")
+        with open(json_path, "r") as f:
+            allrecipes =json.load(f)
+            output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
+        return jsonify({"recipes":output})
+
+
+
 @app.route('/', methods = ["GET"])
 def send_request():
-    img = Image.open("dataset/images/2167.png")
+    img = Image.open(os.path.join(dir_path, "dataset/images/2167.png"))
     output = io.BytesIO()
     img.save(output, format = "png")
     imgString = output.getvalue()
+
     # payload = {"data":imgString}
     resp = requests.post("http://0.0.0.0:5000/predict", data = imgString)# files={"file": open("dataset/images/2167.png", "rb")}
     print(resp.json())

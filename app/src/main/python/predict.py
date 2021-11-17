@@ -9,7 +9,7 @@ from PIL import Image
 import pickle
 import random
 import io
-
+import base64
 random.seed(42)
 torch.manual_seed(42)
 
@@ -46,17 +46,16 @@ def predict(inputs, **kwargs):
         args.update(args_custom)
         args = argparse.Namespace(**args)
     print(f"ARGS IS {args}")
-    if type(inputs)==str:
+    if not isinstance(inputs,list):
         args.inputs = [inputs]
     else:
         args.inputs = inputs
 
     # Pipeline part 1: CNN
-    model = pretrainedmodels.__dict__[args.arch](num_classes = 1000) #args.num_classes) cannot use 6 due to annoying assertionerror
-    new_last_linear = nn.Linear(model.last_linear.in_features, args.num_classes)
-
-    print("MADE LAST LINEAR")
-    model.last_linear = new_last_linear
+    model = pretrainedmodels.__dict__[args.arch](num_classes = args.num_classes)
+    # model = pretrainedmodels.__dict__[args.arch](num_classes = 1000)
+    # new_last_linear = nn.Linear(model.last_linear.in_features, 6)
+    # model.last_linear = new_last_linear
 
     print("Loading weights...")
     checkpoint = torch.load(args.resume, map_location="cpu")
@@ -88,6 +87,7 @@ def predict(inputs, **kwargs):
         elif isinstance(inp, type(Image)):
             input_data = inp 
         else:
+            print("TYPE GOTTEN", type(inp))
             raise TypeError("Input to predict() can only be a string (image path) or bytestring (encoded image)")
 
         tf_img = utils.TransformImage(model)

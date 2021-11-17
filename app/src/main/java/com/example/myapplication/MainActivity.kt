@@ -28,8 +28,7 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import java.io.IOException
 import android.widget.Toast
-
-
+import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     lateinit var bitmap: Bitmap
     lateinit var imgview: ImageView
+//    lateinit var response_global: Response
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,15 +64,21 @@ class MainActivity : AppCompatActivity() {
 
         var predict:Button = findViewById(R.id.button2)
         predict.setOnClickListener(View.OnClickListener {
-            val imageString: String= getImageString(bitmap)
-
+            var imageString: String= getImageString(bitmap)
+            // FLASK https://medium.com/analytics-vidhya/how-to-make-client-android-application-with-flask-for-server-side-8b1d5c55446e
             Log.d("DEBUG", "CALLING PREDICT NOW")
-            // TODO: API CALL TO FLASK
-            var flaskposturl: String = "http://10.0.2.2:5000/predict"
+            val flaskposturl: String = "http://10.0.2.2:5000/predict"
             // https://stackoverflow.com/questions/30554702/cant-connect-to-flask-web-service-connection-refused
             // https://stackoverflow.com/questions/65467434/okhttp-unable-to-connect-to-a-localhost-endpoint-throws-connected-failed-econnr
-            val resp:Response = postRequest(imageString, flaskposturl) // should return {"recipes":[{"title"...}, {"title"...}, ...]}
-            // https://newbedev.com/okhttp-library-networkonmainthreadexception-on-simple-post --> must post on different thread
+
+            // wait for response https://stackoverflow.com/questions/57940361/kotlin-okhttp-api-call-promise
+            postRequest(imageString, flaskposturl){
+                var response:Response = it
+                println("IN THE THEN")
+                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+
+            } // returns {"recipes":[{"title"...}, {"title"...}, ...]}
+//            println("DOES THIS RUN BEFORE THE THEN BLOCK IS EXECUTED???") // Yes
 
 //            // Runs model inference and gets result.
 //            val obj: PyObject = pyo.callAttr("predict",imageString) // "helloworld"
@@ -86,66 +92,45 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-
     companion object {
         val MEDIA_TYPE_MARKDOWN = "text/x-markdown; charset=utf-8".toMediaType() // string
         val MEDIA_TYPE_PLAINTEXT = "text/plain; charset=utf-8".toMediaType() // bytes
         val MEDIA_TYPE_JSON = "application/json; charset=utf-8".toMediaType() // json??
     }
-    private fun postRequest(message: String, URL: String): Response {
+
+
+     private fun postRequest(message: String, URL: String, then: ((Response)->Unit)) {
+        Log.d("DEBUG", "In postRequest")
         val okHttpClient = OkHttpClient()
         // https://howtoprogram.xyz/2017/01/14/how-to-post-with-okhttp/
         val request: Request = Request.Builder()
             .post(message.toRequestBody(MEDIA_TYPE_PLAINTEXT))
             .url(URL)
             .build()
-
-        if (request != null) {
-            okHttpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+//        if (request ==null) throw // TODO: throw something (the computer out of the window)
+//                    response_global = okHttpClient.newCall(request).execute() // MUST BE ASYNC https://newbedev.com/okhttp-library-networkonmainthreadexception-on-simple-post
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                    for ((name, value) in response.headers) {
+                        Log.d("DEBUG","$name: $value")
+                    }
+                    Log.d("DEBUG", response.body!!.string())
+                    then(response)
                 }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val response = runOnUiThread(Runnable {
-                        Log.d("DEBUG","IN THE RUNNABLE")
-                         fun run(): Response {
-                             if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                             for ((name, value) in response.headers) {
-                                 Log.d("DEBUG","$name: $value")
-                             }
-                             Log.d("DEBUG", response.body!!.string())
-                             try {
-                                 return response
-//                                 Toast.makeText(
-//                                     this@MainActivity,
-//                                     response.body!!.string(),
-//                                     Toast.LENGTH_LONG
-//                                 ).show()
-                             } catch (e: IOException) {
-                                 Log.d("DEBUG","cannot toast")
-                                 e.printStackTrace()
-                             }
-                        }
-                    })
-//                    response.use {
-//                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
-//                        for ((name, value) in response.headers) {
-//                            Log.d("DEBUG","$name: $value")
-//                        }
-//                        Log.d("DEBUG", response.body!!.string())
-//                    }
-                }
-            })
-        }
-        return response
+            }
+        })
     }
     private fun getImageString(bitmap: Bitmap): String{
-        var baos: ByteArrayOutputStream = ByteArrayOutputStream();
+        val baos: ByteArrayOutputStream = ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-        val imageBytes: ByteArray = baos.toByteArray()
+        var imageBytes: ByteArray = baos.toByteArray()
         Log.d("DEBUG", "imageBytes type "+imageBytes.javaClass.kotlin.simpleName)
-        val imageString:String = android.util.Base64.encodeToString(imageBytes, Base64.DEFAULT)
+        var imageString:String = android.util.Base64.encodeToString(imageBytes, Base64.DEFAULT)
         Log.d("DEBUG", imageString.substring(0, 20))
         return imageString
     }
