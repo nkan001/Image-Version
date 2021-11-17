@@ -56,10 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         // Runs model inference and gets result.
             val outputs = model.process(byteBuffer)
-//            Log.i(outputs.contentToString(), "outputs:")
             val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-//            Log.i(outputFeature0.contentToString(), "outputFeature0:")
-//            var max = getMax(outputFeature0.floatArray)
 
 
             Log.i("outputFeature0", outputFeature0.intArray.contentToString())
