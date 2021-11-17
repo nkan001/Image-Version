@@ -14,8 +14,8 @@ random.seed(42)
 torch.manual_seed(42)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "src/main/python")
-print(os.listdir())
+# dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "src/main/python")
+
 with open(os.path.join(dir_path, "maincat2id.pkl"), "rb") as f:
     maincat2id = pickle.load(f)
 print("MAINCAT2ID", maincat2id)
@@ -29,7 +29,7 @@ model_names = sorted(name for name in pretrainedmodels.__dict__
 
 
 def predict(inputs, **kwargs):
-    print(f"INSIDE PREDICT {os.getcwd()}, {os.listdir()}")
+    print(f"INSIDE PREDICT {os.getcwd()}")
     print(f"INSIDE PREDICT 2 {dir_path}")
     print(f"INSIDE PREDICT 3 {kwargs}")
     print(f"INSIDE PREDICT 4 {kwargs.get('args')}")
@@ -38,7 +38,7 @@ def predict(inputs, **kwargs):
     else: # default
         print("We are in the else block")
         args_custom = {
-            "resume": os.path.join(dir_path, "model_best.pth"),
+            "resume": os.path.join(dir_path, "model_best.pt"),
             "num_classes": 6,
             "knn_path": os.path.join(dir_path, "knns.pkl")
         }
@@ -53,7 +53,7 @@ def predict(inputs, **kwargs):
 
     # Pipeline part 1: CNN
     model = pretrainedmodels.__dict__[args.arch](num_classes = 1000) #args.num_classes) cannot use 6 due to annoying assertionerror
-    new_last_linear = nn.Linear(model.last_linear.in_features, 6)
+    new_last_linear = nn.Linear(model.last_linear.in_features, args.num_classes)
 
     print("MADE LAST LINEAR")
     model.last_linear = new_last_linear
@@ -69,30 +69,26 @@ def predict(inputs, **kwargs):
             print(f"{k} is not loaded")# overwrite entries in the existing state dict
     model_dict.update(pretrained_dict)
     # Get the input of the last linear layer (i.e. get the extracted features BEFORE they are passed in to the last layer, rather than the final predicted classes)
-    temp = model.last_linear
     model.eval()
+    temp = model.last_linear
 
     # Pipeline part 2: kNN
     knns = pickle.load(open(args.knn_path, 'rb'))
 
     for inp in args.inputs:
         model.last_linear = temp
-        if isinstance(inp, (bytes, bytearray)):
-            print("inp is not a PIL.Image, but a", type(inp))
+        if isinstance(inp, (bytes, bytearray)): # TODO no idea whats the diff between bytes and bytearray
+            print("inp is not a PIL.Image, but a", type(inp), inp[:20])
+            inp = base64.b64decode(inp)
             input_data = Image.open(io.BytesIO(inp))
         elif isinstance(inp, str): # path
             # Load and Transform one input image
             load_img = utils.LoadImage()
             input_data = load_img(inp) 
-        elif isinstance(inp, Image):
+        elif isinstance(inp, type(Image)):
             input_data = inp 
         else:
-            print("Running the else block, inp is a", type(inp))
-            try:
-                input_data = Image.open(io.BytesIO(inp))
-                print("Success")
-            except Exception as e:
-                print(e)
+            raise TypeError("Input to predict() can only be a string (image path) or bytestring (encoded image)")
 
         tf_img = utils.TransformImage(model)
         # print("step 1 shape", type(input_data))

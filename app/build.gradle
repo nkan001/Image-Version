@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'com.chaquo.python'
+//    id 'com.chaquo.python'
 }
 
 android {
@@ -17,23 +17,18 @@ android {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
 
-        python {
-            buildPython "/usr/bin/python3" // 3.8.9 // NOTE: You may need to change this to fit your pythonpath, must be 3.8 to fit chaquopy v10
-            pip {
-                // A directory containing a setup.py, relative to the project
-                // directory (must contain at least one slash):
+//        python {
+//            buildPython "/usr/bin/python3" // 3.8.9 // NOTE: You may need to change this to fit your pythonpath, must be 3.8 to fit chaquopy v10
+//            pip {
+//                // A directory containing a setup.py, relative to the project
+//                // directory (must contain at least one slash):
 //                install "src/main/python/pretrainedmodels_pytorch"
-                // NOTE: this installs the old version that throws assertionerror,
-                // thus we shall tell gradle to install pretrainedmodels in editable mode
-//                options "--editable"
-                // aw man i think chaquopy does not support the -e option
-                install "src/main/python/pretrainedmodels_pytorch"
-
-                // "-r"` followed by a requirements filename, relative to the
-                // app directory
-                install "-r", "src/main/python/requirements.txt"
-            }
-        }
+//
+//                // "-r"` followed by a requirements filename, relative to the
+//                // app directory
+//                install "-r", "src/main/python/requirements.txt"
+//            }
+//        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -73,4 +68,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'org.jetbrains.kotlinx:kotlin-deeplearning-api:0.3.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.5.0'
 }
