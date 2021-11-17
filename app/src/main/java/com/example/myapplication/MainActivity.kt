@@ -13,11 +13,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.ml.CnnKnnModelSmall
-
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,13 +51,12 @@ class MainActivity : AppCompatActivity() {
             tImage.load(resized)
             var byteBuffer = tImage.tensorBuffer
 
-        // Runs model inference and gets result.
+            // Runs model inference and gets result.
             val outputs = model.process(byteBuffer)
             val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
 
             Log.i("outputFeature0", outputFeature0.intArray.contentToString())
-//            tv.setText(max.toString())
             val intent = Intent(this, RecipeListActivity::class.java)
             intent.putExtra("similarity",outputFeature0.intArray)
             startActivity(intent)
@@ -85,16 +81,4 @@ class MainActivity : AppCompatActivity() {
         bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
 
     }
-
-//    fun getMax(arr:FloatArray): Int {
-//        var ind = 0
-//        var min = 0.0f
-//        for (i in 0..5) {
-//            if (arr[i] > min) {
-//                ind = i
-//                min = arr[i]
-//            }
-//        }
-//        return ind
-//    }
 }
