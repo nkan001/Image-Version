@@ -1,12 +1,8 @@
 package com.example.myapplication
 
 import android.content.Context
-import android.util.JsonReader
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
 
 
 class Recipe(
