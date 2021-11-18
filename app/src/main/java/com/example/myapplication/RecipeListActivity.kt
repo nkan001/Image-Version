@@ -20,9 +20,10 @@ class RecipeListActivity : AppCompatActivity() {
             actionBar.title = "Recipe List"
             actionBar.setDisplayHomeAsUpEnabled(true)
         }
-
+        val similarity: String = intent.extras!!.getString("similarity")!!
+        Log.i("similarity", similarity.toString())
         Log.i("TESTING1", "GOING TO RUN RECIPELIST")
-        val recipeList = Recipe.getRecipesFromFile("real_ingredients_2.json", this)
+        val recipeList = Recipe.getRecipesFromFileORJSON(similarity, this, "json")
         Log.i("TESTING2", "DID RECIPELISTRUN")
 
 //        val listItems = arrayOfNulls<String>(recipeList.size)

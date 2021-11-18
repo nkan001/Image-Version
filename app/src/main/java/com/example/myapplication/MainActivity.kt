@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     lateinit var bitmap: Bitmap
     lateinit var imgview: ImageView
+    private val flaskposturl: String = "http://10.0.2.2:5000/predict"
 //    lateinit var response_global: Response
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +68,6 @@ class MainActivity : AppCompatActivity() {
             var imageString: String= getImageString(bitmap)
             // FLASK https://medium.com/analytics-vidhya/how-to-make-client-android-application-with-flask-for-server-side-8b1d5c55446e
             Log.d("DEBUG", "CALLING PREDICT NOW")
-            val flaskposturl: String = "http://10.0.2.2:5000/predict"
             // https://stackoverflow.com/questions/30554702/cant-connect-to-flask-web-service-connection-refused
             // https://stackoverflow.com/questions/65467434/okhttp-unable-to-connect-to-a-localhost-endpoint-throws-connected-failed-econnr
 
@@ -76,7 +76,11 @@ class MainActivity : AppCompatActivity() {
                 var response:Response = it
                 println("IN THE THEN")
                 Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
-
+                val intent = Intent(this, RecipeListActivity::class.java)
+                var responseBody = response.body!!.string()
+                Log.i("ResponseBody", responseBody)
+                intent.putExtra("similarity", responseBody)
+                startActivity(intent)
             } // returns {"recipes":[{"title"...}, {"title"...}, ...]}
 //            println("DOES THIS RUN BEFORE THE THEN BLOCK IS EXECUTED???") // Yes
 
@@ -87,8 +91,17 @@ class MainActivity : AppCompatActivity() {
 
         var goToRecipes:Button = findViewById(R.id.button3)
         goToRecipes.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this, RecipeListActivity::class.java)
-            startActivity(intent)
+            postRequest("", flaskposturl){
+                var response:Response = it
+                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+                val intent = Intent(this, RecipeListActivity::class.java)
+                var responseBody = response.body!!.string()
+                Log.i("ResponseBody", responseBody)
+                intent.putExtra("similarity", responseBody)
+                startActivity(intent)
+            }
+//            val intent = Intent(this, RecipeListActivity::class.java)
+//            startActivity(intent)
         })
     }
 
@@ -119,7 +132,6 @@ class MainActivity : AppCompatActivity() {
                     for ((name, value) in response.headers) {
                         Log.d("DEBUG","$name: $value")
                     }
-                    Log.d("DEBUG", response.body!!.string())
                     then(response)
                 }
             }

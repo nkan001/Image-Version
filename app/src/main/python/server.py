@@ -1,6 +1,7 @@
 import os
 import sys
 sys.path.insert(1, os.getcwd())
+sys.path.insert(1, os.path.join(os.getcwd(), "pretrainedmodels_pytorch"))
 import argparse
 from flask import Flask, jsonify, request
 from pretrainedmodels_pytorch.examples.config import parser
@@ -32,16 +33,22 @@ def predict_request():
         img_bytes = request.data
 
         print("IMG_BYTES", len(img_bytes), type(img_bytes))
-        maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
-        # return jsonify({
-        #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
-        #     'subcat_id': subcat_id, 'subcat_name': subcat_name,
-        # })
-        json_path = os.path.join(dir_path, "all_recipes.json")
+        json_path = os.path.join(dir_path, "removed_duplicate_recipes.json")
         with open(json_path, "r") as f:
             allrecipes =json.load(f)
+        if len(img_bytes)==0:
+            cleanedRecipes = [x for x in allrecipes["recipes"] if type(x["ratings"])!=str]
+            sortedrecipes = sorted(cleanedRecipes, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)
+            return jsonify({"recipes":sortedrecipes[:100]})
+        else:
+            maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
+            # return jsonify({
+            #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
+            #     'subcat_id': subcat_id, 'subcat_name': subcat_name,
+            # })
+            
             output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
-        return jsonify({"recipes":output})
+            return jsonify({"recipes":output})
 
 
 

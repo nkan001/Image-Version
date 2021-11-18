@@ -45,7 +45,7 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
 
         titleTextView.text = recipe.title
         subtitleTextView.text = recipe.description
-        detailTextView.text = recipe.label
+        detailTextView.text = recipe.ratings.toString()
 
         Picasso.get().load(recipe.imageUrl).placeholder(R.mipmap.ic_launcher).into(thumbnailImageView)
 

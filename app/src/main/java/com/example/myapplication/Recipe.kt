@@ -10,16 +10,21 @@ class Recipe(
     val description: String,
     val imageUrl: String,
     val instructionUrl: String,
-    val label: String) {
+    val label: String,
+    val ratings: Double,
+    ) {
 
     companion object {
 
-        fun getRecipesFromFile(filename: String, context: Context): ArrayList<Recipe> {
+        fun getRecipesFromFileORJSON(filename: String, context: Context, mode: String): ArrayList<Recipe> {
             val recipeList = ArrayList<Recipe>()
 
             try {
                 // Load data
-                val jsonString = loadJsonFromAsset("real_ingredients_2.json", context)
+                var jsonString = filename
+                if(mode == "file") {
+                    jsonString = loadJsonFromAsset("real_ingredients_2.json", context)
+                }
                 val json = JSONObject(jsonString)
                 val recipes = json.getJSONArray("recipes")
 
@@ -30,7 +35,8 @@ class Recipe(
                         recipes.getJSONObject(it).getString("description"),
                         recipes.getJSONObject(it).getString("image"),
                         recipes.getJSONObject(it).getString("url"),
-                        recipes.getJSONObject(it).getString("dietLabel")
+                        recipes.getJSONObject(it).getString("dietLabel"),
+                        recipes.getJSONObject(it).getDouble("ratings")
                     )
                 }
 
@@ -53,7 +59,7 @@ class Recipe(
             }
         }
 
-        private fun loadJsonFromAsset(filename: String, context: Context): String? {
+        private fun loadJsonFromAsset(filename: String, context: Context): String {
             var json: String? = null
 
             try {
@@ -65,7 +71,7 @@ class Recipe(
                 json = String(buffer, Charsets.UTF_8)
             } catch (ex: java.io.IOException) {
                 ex.printStackTrace()
-                return null
+                return "{}"
             }
 
             return json
