@@ -6,6 +6,7 @@ import argparse
 from flask import Flask, jsonify, request
 from pretrainedmodels_pytorch.examples.config import parser
 from predict import predict
+from predict_tensorflowlite import predictTensorflowLite
 import requests
 from PIL import Image
 import io
@@ -41,13 +42,15 @@ def predict_request():
             sortedrecipes = sorted(cleanedRecipes, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)
             return jsonify({"recipes":sortedrecipes[:100]})
         else:
-            maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
+            recipeURLS = predictTensorflowLite(img_bytes)
+            output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["url"] in recipeURLS]
+            # maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
             # return jsonify({
             #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
             #     'subcat_id': subcat_id, 'subcat_name': subcat_name,
             # })
             
-            output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
+            # output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
             return jsonify({"recipes":output})
 
 
