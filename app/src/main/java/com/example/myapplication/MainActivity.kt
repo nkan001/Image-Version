@@ -12,7 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
-import com.example.myapplication.ml.Xception
+import com.example.myapplication.ml.CnnKnnModelSmall
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 
@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var bitmap: Bitmap
     lateinit var imgview: ImageView
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -29,9 +30,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         imgview = findViewById(R.id.imageView)
-        val fileName = "labels.txt"
-        val inputString = application.assets.open(fileName).bufferedReader().use {it.readText()}
-        val labelsList = inputString.split("\n")
 
         var tv:TextView = findViewById(R.id.textView)
 
@@ -49,21 +47,20 @@ class MainActivity : AppCompatActivity() {
         predict.setOnClickListener(View.OnClickListener {
 
             var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 299, 299, true)
-            val model = Xception.newInstance(this)
+            val model = CnnKnnModelSmall.newInstance(this)
             var tImage = TensorImage(DataType.FLOAT32)
             tImage.load(resized)
             var byteBuffer = tImage.tensorBuffer
 
-
-        // Runs model inference and gets result.
+            // Runs model inference and gets result.
             val outputs = model.process(byteBuffer)
             val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
-            var max = getMax(outputFeature0.floatArray)
 
-
-            Log.i(max.toString(), "This is the max value index:")
-            tv.setText(labelsList[max])
+            Log.i("outputFeature0", outputFeature0.intArray.contentToString())
+            val intent = Intent(this, RecipeListActivity::class.java)
+            intent.putExtra("similarity",outputFeature0.intArray)
+            startActivity(intent)
 
 // Releases model resources if no longer used.
             model.close()
@@ -84,17 +81,5 @@ class MainActivity : AppCompatActivity() {
         var uri: Uri?= data?.data
         bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
 
-    }
-
-    fun getMax(arr:FloatArray): Int {
-        var ind = 0
-        var min = 0.0f
-        for (i in 0..5) {
-            if (arr[i] > min) {
-                ind = i
-                min = arr[i]
-            }
-        }
-        return ind
     }
 }

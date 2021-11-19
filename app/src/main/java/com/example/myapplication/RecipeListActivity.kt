@@ -20,17 +20,31 @@ class RecipeListActivity : AppCompatActivity() {
             actionBar.title = "Recipe List"
             actionBar.setDisplayHomeAsUpEnabled(true)
         }
-
-        Log.i("TESTING1", "GOING TO RUN RECIPELIST")
-        val recipeList = Recipe.getRecipesFromFile("real_ingredients_2.json", this)
+//        val similarity=intent.getStringExtra("similarity")
+        val similarity: IntArray? = intent.extras?.getIntArray("similarity")
+        Log.i("similarity", similarity.contentToString())
+        val recipeList = Recipe.getRecipesFromFile("all_recipes.json", this)
+        Log.i("FirstRecipelist", recipeList[32].toString())
+        recipeList.sortByDescending { it.ratings*it.ratingCounts }
         Log.i("TESTING2", "DID RECIPELISTRUN")
 
-//        val listItems = arrayOfNulls<String>(recipeList.size)
-//
-//        for (i in 0 until recipeList.size){
-//            val recipe = recipeList[i]
-//            listItems[i] = recipe.title
-//        }
+        val fileName = "labels.txt"
+        val inputString = application.assets.open(fileName).bufferedReader().use {it.readText()}
+        val labelsList = inputString.split("\n")
+
+        val listItems = ArrayList<Recipe>()
+        if (similarity != null) {
+            for (i in similarity.indices) {
+                val index = similarity[i].toInt()
+                if (index<labelsList.size) {
+                    val recipe = recipeList.filter { labelsList[index].contains(it.instructionUrl)}
+                    if (recipe.isNotEmpty()) {
+                        listItems.add(recipe[0])
+                    }
+                }
+            }
+        }
+//        var listItemsIndex = 0
 
 //        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems)
         val listView = findViewById<ListView>(R.id.lv_listView)
@@ -41,8 +55,11 @@ class RecipeListActivity : AppCompatActivity() {
 //            Toast.makeText(applicationContext, parent?.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show()
 //        }
 //        listView.emptyView = emptyTextView
-
         adapter = RecipeAdapter(this, recipeList)
+
+        if (similarity != null) {
+            adapter.setDataSource(listItems)
+        }
         listView.adapter = adapter
 
         val context = this

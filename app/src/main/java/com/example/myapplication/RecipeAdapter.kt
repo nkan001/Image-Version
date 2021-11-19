@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,12 +9,19 @@ import android.widget.*
 import androidx.core.content.res.ResourcesCompat
 import com.squareup.picasso.Picasso
 import kotlin.collections.ArrayList
+import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 
 class RecipeAdapter(private val contex: Context, private val dataSource: ArrayList<Recipe>): ArrayAdapter<Recipe>(contex, android.R.layout.simple_list_item_1, dataSource)
 {
 
     private val inflater: LayoutInflater = contex.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     var filtered = ArrayList<Recipe>()
+
+    fun setDataSource(newDataSource: ArrayList<Recipe>) {
+        filtered = newDataSource
+    }
 
     override fun getCount(): Int {
         return if (filtered.size==0) dataSource.size
@@ -40,12 +48,35 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
         val detailTextView = rowView.findViewById(R.id.recipe_list_detail) as TextView
         // Get thumbnail element
         val thumbnailImageView = rowView.findViewById(R.id.recipe_list_thumbnail) as ImageView
+        // Get diet element
+        val linearForImage = rowView.findViewById(R.id.linearForImage) as LinearLayout
         // 1
         val recipe = getItem(position) as Recipe
 
         titleTextView.text = recipe.title
         subtitleTextView.text = recipe.description
-        detailTextView.text = recipe.label
+        detailTextView.text = recipe.ratings.toString()
+
+        for (i in 1..4){
+            val imageView = ImageView(context)
+            imageView.layoutParams = LinearLayout.LayoutParams(90, 90) // value is in pixels
+            if(!recipe.eggFree && i == 1){
+                imageView.setImageResource(R.mipmap.diet_icons_egg)
+                linearForImage.addView(imageView)
+            }
+            if(!recipe.dairyFree && i == 2){
+                imageView.setImageResource(R.mipmap.diet_icons_dairy)
+                linearForImage.addView(imageView)
+            }
+            if(!recipe.nutFree && i == 3){
+                imageView.setImageResource(R.mipmap.diet_icons_nuts)
+                linearForImage.addView(imageView)
+            }
+            if(!recipe.shellFishFree && i == 4){
+                imageView.setImageResource(R.mipmap.diet_icons_shellfish)
+                linearForImage.addView(imageView)
+            }
+        }
 
         Picasso.get().load(recipe.imageUrl).placeholder(R.mipmap.ic_launcher).into(thumbnailImageView)
 
@@ -60,6 +91,7 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
 
         return rowView
     }
+
 
     override fun getFilter() = filter
 
@@ -92,7 +124,7 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
             return results
         }
 
-        override fun publishResults(constraint: CharSequence?, results: Filter.FilterResults) {
+        override fun publishResults(constraint: CharSequence?, results: FilterResults) {
             filtered = results.values as ArrayList<Recipe>
             notifyDataSetChanged() //notifyDataSetInvalidated() //
         }
