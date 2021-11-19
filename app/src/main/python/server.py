@@ -43,7 +43,15 @@ def predict_request():
             return jsonify({"recipes":sortedrecipes[:100]})
         else:
             recipeURLS = predictTensorflowLite(img_bytes)
-            output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["url"] in recipeURLS]
+            output = []
+            for recipeurl in recipeURLS:
+                for rec in allrecipes["recipes"]:
+                    if recipeurl == rec["url"]:
+                        if type(rec["ratings"]) == str:
+                            rec["ratings"] = 0
+                        output.append(rec)
+                        break
+            print(output)
             # maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
             # return jsonify({
             #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
