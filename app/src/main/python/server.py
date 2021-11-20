@@ -1,5 +1,6 @@
 import os
 import sys
+import base64
 sys.path.insert(1, os.getcwd())
 sys.path.insert(1, os.path.join(os.getcwd(), "pretrainedmodels_pytorch"))
 import argparse
@@ -37,29 +38,39 @@ def predict_request():
         json_path = os.path.join(dir_path, "removed_duplicate_recipes.json")
         with open(json_path, "r") as f:
             allrecipes =json.load(f)
+        print(img_bytes)
+        cleanedRecipes = [x for x in allrecipes["recipes"] if type(x["ratings"])!=str]
         if len(img_bytes)==0:
-            cleanedRecipes = [x for x in allrecipes["recipes"] if type(x["ratings"])!=str]
             sortedrecipes = sorted(cleanedRecipes, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)
             return jsonify({"recipes":sortedrecipes[:100]})
         else:
-            recipeURLS = predictTensorflowLite(img_bytes)
-            output = []
-            for recipeurl in recipeURLS:
-                for rec in allrecipes["recipes"]:
-                    if recipeurl == rec["url"]:
-                        if type(rec["ratings"]) == str:
-                            rec["ratings"] = 0
-                        output.append(rec)
-                        break
-            print(output)
-            # maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
-            # return jsonify({
-            #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
-            #     'subcat_id': subcat_id, 'subcat_name': subcat_name,
-            # })
-            
-            # output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
-            return jsonify({"recipes":output})
+            filterCategory = img_bytes.decode("utf-8").replace("'","").split(",")
+            filterCategory = [x.strip() for x in filterCategory]
+            print("filterCategory: ", filterCategory)
+            categories = ["egg_free", "dairy_free", "nut_free", "shellfish_free", "vegetarian", "vegan"]
+            if len(img_bytes)<78 and any([x in categories for x in filterCategory]):
+                filtered = [x for x in cleanedRecipes if all([x[cat]==True for cat in filterCategory])]
+                sortedFiltered = sorted(filtered, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)
+                return jsonify({"recipes":sortedFiltered[:100]})
+            else:
+                recipeURLS = predictTensorflowLite(img_bytes)
+                output = []
+                for recipeurl in recipeURLS:
+                    for rec in allrecipes["recipes"]:
+                        if recipeurl == rec["url"]:
+                            if type(rec["ratings"]) == str:
+                                rec["ratings"] = 0
+                            output.append(rec)
+                            break
+                print(output)
+                # maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
+                # return jsonify({
+                #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
+                #     'subcat_id': subcat_id, 'subcat_name': subcat_name,
+                # })
+                
+                # output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
+                return jsonify({"recipes":output})
 
 
 

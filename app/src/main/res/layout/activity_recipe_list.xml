@@ -1,10 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RecipeListActivity">
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Egg Free"
+            android:textAllCaps="false"
+            android:id="@+id/eggFreeFilter"
+            android:background="@drawable/filter_selection"
+            android:onClick="eggFreeFilterTapped"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Dairy Free"
+            android:textAllCaps="false"
+            android:id="@+id/dairyFreeFilter"
+            android:background="@drawable/filter_selection"
+            android:onClick="dairyFreeFilterTapped"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Nut Free"
+            android:textAllCaps="false"
+            android:id="@+id/nutFreeFilter"
+            android:background="@drawable/filter_selection"
+            android:onClick="nutFreeFilterTapped"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Shellfish Free"
+            android:textAllCaps="false"
+            android:id="@+id/shellfishFreeFilter"
+            android:background="@drawable/filter_selection"
+            android:onClick="shellfishFreeFilterTapped"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Vegetarian"
+            android:textAllCaps="false"
+            android:id="@+id/VegetarianFilter"
+            android:background="@drawable/filter_selection"
+            android:onClick="vegetarianFilterTapped"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:text="Vegan"
+            android:textAllCaps="false"
+            android:id="@+id/veganFilter"
+            android:background="@drawable/filter_selection"
+            android:onClick="veganFilterTapped"/>
+
+    </LinearLayout>
+
+
 
     <ListView
         android:layout_width="match_parent"
@@ -20,4 +97,4 @@
         android:visibility="gone"
         android:layout_centerInParent="true"/>
 
-</RelativeLayout>
+</LinearLayout>

@@ -5,30 +5,14 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.beust.klaxon.JsonObject
-// https://chaquo.com/chaquopy/doc/current/android.html#android-source
-//import com.chaquo.python.PyObject
-//import com.chaquo.python.Python
-//import com.chaquo.python.android.AndroidPlatform
 import com.example.myapplication.databinding.ActivityMainBinding
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.ByteArrayOutputStream
 import okhttp3.Response
-import okhttp3.OkHttpClient
-import okhttp3.RequestBody
-import java.io.IOException
-import android.widget.Toast
-import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -65,14 +49,14 @@ class MainActivity : AppCompatActivity() {
 
         var predict:Button = findViewById(R.id.button2)
         predict.setOnClickListener(View.OnClickListener {
-            var imageString: String= getImageString(bitmap)
+            var imageString: String= APICalls.getImageString(bitmap)
             // FLASK https://medium.com/analytics-vidhya/how-to-make-client-android-application-with-flask-for-server-side-8b1d5c55446e
             Log.d("DEBUG", "CALLING PREDICT NOW")
             // https://stackoverflow.com/questions/30554702/cant-connect-to-flask-web-service-connection-refused
             // https://stackoverflow.com/questions/65467434/okhttp-unable-to-connect-to-a-localhost-endpoint-throws-connected-failed-econnr
 
             // wait for response https://stackoverflow.com/questions/57940361/kotlin-okhttp-api-call-promise
-            postRequest(imageString, flaskposturl){
+            APICalls.postRequest(imageString, this){
                 var response:Response = it
                 println("IN THE THEN")
                 Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
@@ -91,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         var goToRecipes:Button = findViewById(R.id.button3)
         goToRecipes.setOnClickListener(View.OnClickListener {
-            postRequest("", flaskposturl){
+            APICalls.postRequest("", this){
                 var response:Response = it
                 Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
                 val intent = Intent(this, RecipeListActivity::class.java)
@@ -105,47 +89,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    companion object {
-        val MEDIA_TYPE_MARKDOWN = "text/x-markdown; charset=utf-8".toMediaType() // string
-        val MEDIA_TYPE_PLAINTEXT = "text/plain; charset=utf-8".toMediaType() // bytes
-        val MEDIA_TYPE_JSON = "application/json; charset=utf-8".toMediaType() // json??
-    }
-
-
-    private fun postRequest(message: String, URL: String, then: ((Response)->Unit)) {
-        Log.d("DEBUG", "In postRequest")
-        val okHttpClient = OkHttpClient()
-        // https://howtoprogram.xyz/2017/01/14/how-to-post-with-okhttp/
-        val request: Request = Request.Builder()
-            .post(message.toRequestBody(MEDIA_TYPE_PLAINTEXT))
-            .url(URL)
-            .build()
-//        if (request ==null) throw // TODO: throw something (the computer out of the window)
-//                    response_global = okHttpClient.newCall(request).execute() // MUST BE ASYNC https://newbedev.com/okhttp-library-networkonmainthreadexception-on-simple-post
-        okHttpClient.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-            }
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                    for ((name, value) in response.headers) {
-                        Log.d("DEBUG","$name: $value")
-                    }
-                    then(response)
-                }
-            }
-        })
-    }
-    private fun getImageString(bitmap: Bitmap): String{
-        val baos: ByteArrayOutputStream = ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-        var imageBytes: ByteArray = baos.toByteArray()
-        Log.d("DEBUG", "imageBytes type "+imageBytes.javaClass.kotlin.simpleName)
-        var imageString:String = android.util.Base64.encodeToString(imageBytes, Base64.DEFAULT)
-        Log.d("DEBUG", imageString.substring(0, 20))
-        return imageString
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -156,4 +99,34 @@ class MainActivity : AppCompatActivity() {
         bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
 
     }
+
+    fun filterRecipeList(filterCategory: String){
+        APICalls.postRequest(filterCategory, this){
+                var response:Response = it
+                println("IN THE THEN")
+                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+                var responseBody = response.body!!.string()
+                Log.i("ResponseBodyFilter", responseBody)
+            }
+    }
+
+
+
+//    fun eggFreeFilterTapped(view: android.view.View) {
+//        Log.i("eggfreefilter", "MainActivity")
+//        var eggFreeFilter:Button = findViewById(R.id.eggFreeFilter)
+//        eggFreeFilter.setOnClickListener(View.OnClickListener {
+//            postRequest("eggFree", flaskposturl){
+//                var response:Response = it
+//                println("IN THE THEN")
+//                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+////            val intent = Intent(this, RecipeListActivity::class.java)
+//                var responseBody = response.body!!.string()
+//                Log.i("ResponseBodyFilter", responseBody)
+////            intent.putExtra("similarity", responseBody)
+////            startActivity(intent)
+//            }
+//        })
+//    }
+
 }

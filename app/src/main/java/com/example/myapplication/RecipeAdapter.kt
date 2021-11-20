@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,7 +14,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContentProviderCompat.requireContext
 
-class RecipeAdapter(private val contex: Context, private val dataSource: ArrayList<Recipe>): ArrayAdapter<Recipe>(contex, android.R.layout.simple_list_item_1, dataSource)
+class RecipeAdapter(private val contex: Context, private var dataSource: ArrayList<Recipe>): ArrayAdapter<Recipe>(contex, android.R.layout.simple_list_item_1, dataSource)
 {
 
     private val inflater: LayoutInflater = contex.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -21,6 +22,10 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
 
     fun setDataSource(newDataSource: ArrayList<Recipe>) {
         filtered = newDataSource
+//        contex
+        (contex as Activity).runOnUiThread {
+            notifyDataSetChanged()
+        }
     }
 
     override fun getCount(): Int {

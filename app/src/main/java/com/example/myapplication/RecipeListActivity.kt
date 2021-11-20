@@ -4,11 +4,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import android.widget.*
+import okhttp3.Response
+import kotlin.collections.contains as contains
+import okhttp3.ResponseBody
+
 
 class RecipeListActivity : AppCompatActivity() {
 
     private lateinit var adapter: RecipeAdapter
+    private val filterCategories = ArrayList<String>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,4 +69,52 @@ class RecipeListActivity : AppCompatActivity() {
 
         return super.onCreateOptionsMenu(menu)
     }
+
+    fun callFilter(filterCategoryString: String){
+        Log.i("beforefilterCategories", filterCategories.toString())
+        if (filterCategories.contains(filterCategoryString)) {
+            filterCategories.remove(filterCategoryString)
+            Log.i("removedfilterCategories", filterCategories.toString())
+        } else {
+            filterCategories.add(filterCategoryString)
+            Log.i("addedfilterCategories", filterCategories.toString())
+        }
+        Log.i("afterfilterCategories", filterCategories.toString())
+        val message = filterCategories.joinToString { it -> "\'${it}\'" }
+        Log.i("recipeLsitActivity", message)
+        APICalls.postRequest(message, this){
+            var response:Response = it
+//            val responseBody = response.body!!.string()
+            val responseBodyCopy = response.peekBody(Long.MAX_VALUE)
+            val responseBody = responseBodyCopy.string()
+            Log.i("ResponseBodyFilter", responseBody)
+            val recipeList = Recipe.getRecipesFromFileORJSON(responseBody, this, "json")
+            adapter.setDataSource(recipeList)
+        }
+    }
+
+    fun eggFreeFilterTapped(view: android.view.View) {
+        callFilter("egg_free")
+    }
+
+    fun dairyFreeFilterTapped(view: android.view.View) {
+        callFilter("dairy_free")
+    }
+
+    fun nutFreeFilterTapped(view: android.view.View) {
+        callFilter("nut_free")
+    }
+
+    fun shellfishFreeFilterTapped(view: android.view.View) {
+        callFilter("shellfish_free")
+    }
+
+    fun vegetarianFilterTapped(view: android.view.View) {
+        callFilter("vegetarian")
+    }
+
+    fun veganFilterTapped(view: android.view.View) {
+        callFilter("vegan")
+    }
+
 }
