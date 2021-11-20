@@ -12,7 +12,13 @@ class Recipe(
     val instructionUrl: String,
     val label: String,
     val ratings: Double,
-    ) {
+    val eggFree: Boolean,
+    val dairyFree: Boolean,
+    val nutFree: Boolean,
+    val shellFishFree: Boolean,
+    val vegetarian: Boolean,
+    val vegan: Boolean) {
+
 
     companion object {
 
@@ -36,7 +42,13 @@ class Recipe(
                         recipes.getJSONObject(it).getString("image"),
                         recipes.getJSONObject(it).getString("url"),
                         recipes.getJSONObject(it).getString("dietLabel"),
-                        recipes.getJSONObject(it).getDouble("ratings")
+                        recipes.getJSONObject(it).getDouble("ratings"),
+                        recipes.getJSONObject(it).getBoolean("egg_free"),
+                        recipes.getJSONObject(it).getBoolean("dairy_free"),
+                        recipes.getJSONObject(it).getBoolean("nut_free"),
+                        recipes.getJSONObject(it).getBoolean("shellfish_free"),
+                        recipes.getJSONObject(it).getBoolean("vegetarian"),
+                        recipes.getJSONObject(it).getBoolean("vegan")
                     )
                 }
 
