@@ -19,14 +19,12 @@ class Recipe(
     val vegetarian: Boolean,
     val vegan: Boolean) {
 
-
     companion object {
 
         fun getRecipesFromFileORJSON(filename: String, context: Context, mode: String): ArrayList<Recipe> {
             val recipeList = ArrayList<Recipe>()
 
             try {
-                // Load data
                 var jsonString = filename
                 if(mode == "file") {
                     jsonString = loadJsonFromAsset("real_ingredients_2.json", context)

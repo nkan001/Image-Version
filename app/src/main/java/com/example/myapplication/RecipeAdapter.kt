@@ -19,6 +19,10 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
     private val inflater: LayoutInflater = contex.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     var filtered = ArrayList<Recipe>()
 
+    fun setDataSource(newDataSource: ArrayList<Recipe>) {
+        filtered = newDataSource
+    }
+
     override fun getCount(): Int {
         return if (filtered.size==0) dataSource.size
         else filtered.size
@@ -87,6 +91,7 @@ class RecipeAdapter(private val contex: Context, private val dataSource: ArrayLi
 
         return rowView
     }
+
 
     override fun getFilter() = filter
 

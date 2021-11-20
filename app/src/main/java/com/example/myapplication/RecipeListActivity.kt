@@ -20,28 +20,14 @@ class RecipeListActivity : AppCompatActivity() {
             actionBar.title = "Recipe List"
             actionBar.setDisplayHomeAsUpEnabled(true)
         }
+
         val similarity: String = intent.extras!!.getString("similarity")!!
         Log.i("similarity", similarity.toString())
         Log.i("TESTING1", "GOING TO RUN RECIPELIST")
         val recipeList = Recipe.getRecipesFromFileORJSON(similarity, this, "json")
         Log.i("TESTING2", "DID RECIPELISTRUN")
 
-//        val listItems = arrayOfNulls<String>(recipeList.size)
-//
-//        for (i in 0 until recipeList.size){
-//            val recipe = recipeList[i]
-//            listItems[i] = recipe.title
-//        }
-
-//        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems)
         val listView = findViewById<ListView>(R.id.lv_listView)
-//        val emptyTextView = findViewById<TextView>(R.id.tv_emptyTextView)
-//
-//        listView.adapter = adapter
-//        listView.onItemClickListener = AdapterView.OnItemClickListener{ parent, view, position, id ->
-//            Toast.makeText(applicationContext, parent?.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show()
-//        }
-//        listView.emptyView = emptyTextView
 
         adapter = RecipeAdapter(this, recipeList)
         listView.adapter = adapter

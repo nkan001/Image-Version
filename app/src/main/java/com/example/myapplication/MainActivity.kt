@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-     private fun postRequest(message: String, URL: String, then: ((Response)->Unit)) {
+    private fun postRequest(message: String, URL: String, then: ((Response)->Unit)) {
         Log.d("DEBUG", "In postRequest")
         val okHttpClient = OkHttpClient()
         // https://howtoprogram.xyz/2017/01/14/how-to-post-with-okhttp/
