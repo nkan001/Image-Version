@@ -65,7 +65,7 @@
             android:layout_height="match_parent"
             android:text="Vegetarian"
             android:textAllCaps="false"
-            android:id="@+id/VegetarianFilter"
+            android:id="@+id/vegetarianFilter"
             android:background="@drawable/filter_selection"
             android:onClick="vegetarianFilterTapped"/>
 

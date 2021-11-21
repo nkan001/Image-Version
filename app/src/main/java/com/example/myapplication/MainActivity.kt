@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         var goToRecipes:Button = findViewById(R.id.button3)
         goToRecipes.setOnClickListener(View.OnClickListener {
-            APICalls.postRequest("", this){
+            APICalls.postRequest("goToRecipes", this){
                 var response:Response = it
                 Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
                 val intent = Intent(this, RecipeListActivity::class.java)

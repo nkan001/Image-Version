@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.*
+import com.example.myapplication.R
 import okhttp3.Response
 import kotlin.collections.contains as contains
 import okhttp3.ResponseBody
@@ -70,14 +71,17 @@ class RecipeListActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    fun callFilter(filterCategoryString: String){
+    fun callFilter(filterCategoryString: String, buttonId: Int){
         Log.i("beforefilterCategories", filterCategories.toString())
+        var button: Button = findViewById(buttonId)
         if (filterCategories.contains(filterCategoryString)) {
             filterCategories.remove(filterCategoryString)
             Log.i("removedfilterCategories", filterCategories.toString())
+            button.setBackgroundColor(resources.getColor(R.color.white))
         } else {
             filterCategories.add(filterCategoryString)
             Log.i("addedfilterCategories", filterCategories.toString())
+            button.setBackgroundColor(resources.getColor(R.color.purple_200))
         }
         Log.i("afterfilterCategories", filterCategories.toString())
         val message = filterCategories.joinToString { it -> "\'${it}\'" }
@@ -94,27 +98,27 @@ class RecipeListActivity : AppCompatActivity() {
     }
 
     fun eggFreeFilterTapped(view: android.view.View) {
-        callFilter("egg_free")
+        callFilter("egg_free", R.id.eggFreeFilter)
     }
 
     fun dairyFreeFilterTapped(view: android.view.View) {
-        callFilter("dairy_free")
+        callFilter("dairy_free", R.id.dairyFreeFilter)
     }
 
     fun nutFreeFilterTapped(view: android.view.View) {
-        callFilter("nut_free")
+        callFilter("nut_free", R.id.nutFreeFilter)
     }
 
     fun shellfishFreeFilterTapped(view: android.view.View) {
-        callFilter("shellfish_free")
+        callFilter("shellfish_free", R.id.shellfishFreeFilter)
     }
 
     fun vegetarianFilterTapped(view: android.view.View) {
-        callFilter("vegetarian")
+        callFilter("vegetarian", R.id.vegetarianFilter)
     }
 
     fun veganFilterTapped(view: android.view.View) {
-        callFilter("vegan")
+        callFilter("vegan", R.id.veganFilter)
     }
 
 }

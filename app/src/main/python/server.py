@@ -40,16 +40,26 @@ def predict_request():
             allrecipes =json.load(f)
         print(img_bytes)
         cleanedRecipes = [x for x in allrecipes["recipes"] if type(x["ratings"])!=str]
-        if len(img_bytes)==0:
+        filterCategory = img_bytes.decode("utf-8")
+        print(filterCategory)
+        if filterCategory=="goToRecipes":
+            if os.path.isfile("process_from.json"):
+                os.remove("process_from.json")
             sortedrecipes = sorted(cleanedRecipes, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)
             return jsonify({"recipes":sortedrecipes[:100]})
         else:
-            filterCategory = img_bytes.decode("utf-8").replace("'","").split(",")
+            filterCategory = filterCategory.replace("'","").split(",")
             filterCategory = [x.strip() for x in filterCategory]
             print("filterCategory: ", filterCategory)
             categories = ["egg_free", "dairy_free", "nut_free", "shellfish_free", "vegetarian", "vegan"]
             if len(img_bytes)<78 and any([x in categories for x in filterCategory]):
-                filtered = [x for x in cleanedRecipes if all([x[cat]==True for cat in filterCategory])]
+                process_from = None
+                if os.path.isfile("process_from.json"):
+                    with open("process_from.json", "r") as f:
+                        process_from = json.load(f)
+                recipelist = process_from["recipes"] if process_from else cleanedRecipes
+                filtered = [x for x in recipelist if all([x[cat]==True for cat in filterCategory])]
+                print(filtered)
                 sortedFiltered = sorted(filtered, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)
                 return jsonify({"recipes":sortedFiltered[:100]})
             else:
@@ -62,7 +72,9 @@ def predict_request():
                                 rec["ratings"] = 0
                             output.append(rec)
                             break
-                print(output)
+                process_from = {"recipes":output}
+                with open("process_from.json", "w") as f:
+                    json.dump(process_from, f)
                 # maincat_id, maincat_name, subcat_id, subcat_name = predict(img_bytes)
                 # return jsonify({
                 #     'maincat_id': maincat_id, 'maincat_name': maincat_name,
@@ -70,7 +82,7 @@ def predict_request():
                 # })
                 
                 # output = [{k:v for k,v in x.items()} for x in allrecipes["recipes"] if x["main_cat"]==maincat_name and x["sub_cat"]==subcat_name]
-                return jsonify({"recipes":output})
+                return jsonify(process_from)
 
 
 
