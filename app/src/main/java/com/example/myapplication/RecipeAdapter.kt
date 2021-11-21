@@ -63,19 +63,19 @@ class RecipeAdapter(private val contex: Context, private var dataSource: ArrayLi
         for (i in 1..4){
             val imageView = ImageView(contex)
             imageView.layoutParams = LinearLayout.LayoutParams(90, 90) // value is in pixels
-            if(recipe.eggFree && i == 1){
+            if(!recipe.eggFree && i == 1){
                 imageView.setImageResource(R.mipmap.diet_icons_egg)
                 linearForImage.addView(imageView)
             }
-            if(recipe.dairyFree && i == 2){
+            if(!recipe.dairyFree && i == 2){
                 imageView.setImageResource(R.mipmap.diet_icons_dairy)
                 linearForImage.addView(imageView)
             }
-            if(recipe.nutFree && i == 3){
+            if(!recipe.nutFree && i == 3){
                 imageView.setImageResource(R.mipmap.diet_icons_nuts)
                 linearForImage.addView(imageView)
             }
-            if(recipe.shellFishFree && i == 4){
+            if(!recipe.shellFishFree && i == 4){
                 imageView.setImageResource(R.mipmap.diet_icons_shellfish)
                 linearForImage.addView(imageView)
             }
