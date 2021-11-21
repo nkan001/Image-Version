@@ -52,12 +52,14 @@ def predict_request():
             filterCategory = [x.strip() for x in filterCategory]
             print("filterCategory: ", filterCategory)
             categories = ["egg_free", "dairy_free", "nut_free", "shellfish_free", "vegetarian", "vegan"]
-            if len(img_bytes)<78 and any([x in categories for x in filterCategory]):
+            if len(img_bytes)<78 and (any([x in categories for x in filterCategory]) or filterCategory == [""]):
                 process_from = None
                 if os.path.isfile("process_from.json"):
                     with open("process_from.json", "r") as f:
                         process_from = json.load(f)
                 recipelist = process_from["recipes"] if process_from else cleanedRecipes
+                if filterCategory == [""]:
+                    return jsonify({"recipes":recipelist})
                 filtered = [x for x in recipelist if all([x[cat]==True for cat in filterCategory])]
                 print(filtered)
                 sortedFiltered = sorted(filtered, key=lambda x: float(x["ratings"])*float(x["rating_counts"]), reverse=True)

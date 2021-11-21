@@ -15,7 +15,7 @@ def predictTensorflowLite(inp):
     print(input_data.shape)
     # input_data = tf.image.decode_jpeg(inp, channels=3)
     # Load the TFLite model and allocate tensors.
-    interpreter = tf.lite.Interpreter(model_path="cnn_knn_model_small.tflite")
+    interpreter = tf.lite.Interpreter(model_path="cnn_knn_model_small_thresholded.tflite")
     interpreter.allocate_tensors()
 
     # Get input and output tensors.
@@ -33,7 +33,6 @@ def predictTensorflowLite(inp):
     # The function `get_tensor()` returns a copy of the tensor data.
     # Use `tensor()` in order to get a pointer to the tensor.
     output_data = interpreter.get_tensor(output_details[0]['index'])
-    print("output_data\n", output_data)
     with open("labels.txt") as f:
         recipesURLfull = f.read().splitlines()
         recipesURL = [recipesURLfull[int(i)] for i in output_data]
