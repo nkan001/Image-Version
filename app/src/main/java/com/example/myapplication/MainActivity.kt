@@ -12,69 +12,83 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.databinding.ActivityMainBinding
-import com.example.myapplication.ml.Xception
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.image.TensorImage
+import okhttp3.Response
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     lateinit var bitmap: Bitmap
     lateinit var imgview: ImageView
+    private val flaskposturl: String = "http://10.0.2.2:5000/predict"
+//    lateinit var response_global: Response
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // https://www.youtube.com/watch?v=27kdAqDUpcE&ab_channel=ProgrammingFever
+//        if (! Python.isStarted()) {
+//            Python.start(AndroidPlatform(this));
+//        }
+//        var py: Python = Python.getInstance();
+//        var pyo: PyObject = py.getModule("predict")//"hello")
+//        Log.d("DEBUG", "Got the python module $pyo")
+
         imgview = findViewById(R.id.imageView)
-        val fileName = "labels.txt"
-        val inputString = application.assets.open(fileName).bufferedReader().use {it.readText()}
-        val labelsList = inputString.split("\n")
-
         var tv:TextView = findViewById(R.id.textView)
-
-
         var select: Button = findViewById(R.id.button)
         select.setOnClickListener(View.OnClickListener {
+            Log.d("DEBUG","UPLOAD WAS CLICKED")
             var intent: Intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(intent, 100)
-
             tv.setText("Click on Predict!")
         })
 
         var predict:Button = findViewById(R.id.button2)
         predict.setOnClickListener(View.OnClickListener {
+            var imageString: String= APICalls.getImageString(bitmap)
+            // FLASK https://medium.com/analytics-vidhya/how-to-make-client-android-application-with-flask-for-server-side-8b1d5c55446e
+            Log.d("DEBUG", "CALLING PREDICT NOW")
+            // https://stackoverflow.com/questions/30554702/cant-connect-to-flask-web-service-connection-refused
+            // https://stackoverflow.com/questions/65467434/okhttp-unable-to-connect-to-a-localhost-endpoint-throws-connected-failed-econnr
 
-            var resized: Bitmap = Bitmap.createScaledBitmap(bitmap, 299, 299, true)
-            val model = Xception.newInstance(this)
-            var tImage = TensorImage(DataType.FLOAT32)
-            tImage.load(resized)
-            var byteBuffer = tImage.tensorBuffer
+            // wait for response https://stackoverflow.com/questions/57940361/kotlin-okhttp-api-call-promise
+            APICalls.postRequest(imageString, this){
+                var response:Response = it
+                println("IN THE THEN")
+                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+                val intent = Intent(this, RecipeListActivity::class.java)
+                var responseBody = response.body!!.string()
+                Log.i("ResponseBody", responseBody)
+                intent.putExtra("similarity", responseBody)
+                startActivity(intent)
+            } // returns {"recipes":[{"title"...}, {"title"...}, ...]}
+//            println("DOES THIS RUN BEFORE THE THEN BLOCK IS EXECUTED???") // Yes
 
-
-        // Runs model inference and gets result.
-            val outputs = model.process(byteBuffer)
-            val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-
-            var max = getMax(outputFeature0.floatArray)
-
-
-            Log.i(max.toString(), "This is the max value index:")
-            tv.setText(labelsList[max])
-
-// Releases model resources if no longer used.
-            model.close()
+//            // Runs model inference and gets result.
+//            val obj: PyObject = pyo.callAttr("predict",imageString) // "helloworld"
+//            Log.d("DEBUG", "THE OBJ IS $obj")
         })
 
         var goToRecipes:Button = findViewById(R.id.button3)
         goToRecipes.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this, RecipeListActivity::class.java)
-            startActivity(intent)
+            APICalls.postRequest("goToRecipes", this){
+                var response:Response = it
+                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+                val intent = Intent(this, RecipeListActivity::class.java)
+                var responseBody = response.body!!.string()
+                Log.i("ResponseBody", responseBody)
+                intent.putExtra("similarity", responseBody)
+                startActivity(intent)
+            }
+//            val intent = Intent(this, RecipeListActivity::class.java)
+//            startActivity(intent)
         })
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -86,15 +100,33 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun getMax(arr:FloatArray): Int {
-        var ind = 0
-        var min = 0.0f
-        for (i in 0..5) {
-            if (arr[i] > min) {
-                ind = i
-                min = arr[i]
+    fun filterRecipeList(filterCategory: String){
+        APICalls.postRequest(filterCategory, this){
+                var response:Response = it
+                println("IN THE THEN")
+                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+                var responseBody = response.body!!.string()
+                Log.i("ResponseBodyFilter", responseBody)
             }
-        }
-        return ind
     }
+
+
+
+//    fun eggFreeFilterTapped(view: android.view.View) {
+//        Log.i("eggfreefilter", "MainActivity")
+//        var eggFreeFilter:Button = findViewById(R.id.eggFreeFilter)
+//        eggFreeFilter.setOnClickListener(View.OnClickListener {
+//            postRequest("eggFree", flaskposturl){
+//                var response:Response = it
+//                println("IN THE THEN")
+//                Log.d("DEBUG", "GOT THE RESPONSE IN MAINACTIVITY "+response.toString())
+////            val intent = Intent(this, RecipeListActivity::class.java)
+//                var responseBody = response.body!!.string()
+//                Log.i("ResponseBodyFilter", responseBody)
+////            intent.putExtra("similarity", responseBody)
+////            startActivity(intent)
+//            }
+//        })
+//    }
+
 }

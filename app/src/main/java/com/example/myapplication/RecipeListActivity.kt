@@ -4,11 +4,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import android.widget.*
+import com.example.myapplication.R
+import okhttp3.Response
+import kotlin.collections.contains as contains
+import okhttp3.ResponseBody
+
 
 class RecipeListActivity : AppCompatActivity() {
 
     private lateinit var adapter: RecipeAdapter
+    private val filterCategories = ArrayList<String>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,26 +29,13 @@ class RecipeListActivity : AppCompatActivity() {
             actionBar.setDisplayHomeAsUpEnabled(true)
         }
 
+        val similarity: String = intent.extras!!.getString("similarity")!!
+        Log.i("similarity", similarity.toString())
         Log.i("TESTING1", "GOING TO RUN RECIPELIST")
-        val recipeList = Recipe.getRecipesFromFile("real_ingredients_2.json", this)
+        val recipeList = Recipe.getRecipesFromFileORJSON(similarity, this, "json")
         Log.i("TESTING2", "DID RECIPELISTRUN")
 
-//        val listItems = arrayOfNulls<String>(recipeList.size)
-//
-//        for (i in 0 until recipeList.size){
-//            val recipe = recipeList[i]
-//            listItems[i] = recipe.title
-//        }
-
-//        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems)
         val listView = findViewById<ListView>(R.id.lv_listView)
-//        val emptyTextView = findViewById<TextView>(R.id.tv_emptyTextView)
-//
-//        listView.adapter = adapter
-//        listView.onItemClickListener = AdapterView.OnItemClickListener{ parent, view, position, id ->
-//            Toast.makeText(applicationContext, parent?.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show()
-//        }
-//        listView.emptyView = emptyTextView
 
         adapter = RecipeAdapter(this, recipeList)
         listView.adapter = adapter
@@ -75,4 +70,55 @@ class RecipeListActivity : AppCompatActivity() {
 
         return super.onCreateOptionsMenu(menu)
     }
+
+    fun callFilter(filterCategoryString: String, buttonId: Int){
+        Log.i("beforefilterCategories", filterCategories.toString())
+        var button: Button = findViewById(buttonId)
+        if (filterCategories.contains(filterCategoryString)) {
+            filterCategories.remove(filterCategoryString)
+            Log.i("removedfilterCategories", filterCategories.toString())
+            button.setBackgroundColor(resources.getColor(R.color.white))
+        } else {
+            filterCategories.add(filterCategoryString)
+            Log.i("addedfilterCategories", filterCategories.toString())
+            button.setBackgroundColor(resources.getColor(R.color.purple_200))
+        }
+        Log.i("afterfilterCategories", filterCategories.toString())
+        val message = filterCategories.joinToString { it -> "\'${it}\'" }
+        Log.i("recipeLsitActivity", message)
+        APICalls.postRequest(message, this){
+            var response:Response = it
+//            val responseBody = response.body!!.string()
+            val responseBodyCopy = response.peekBody(Long.MAX_VALUE)
+            val responseBody = responseBodyCopy.string()
+            Log.i("ResponseBodyFilter", responseBody)
+            val recipeList = Recipe.getRecipesFromFileORJSON(responseBody, this, "json")
+            adapter.setDataSource(recipeList)
+        }
+    }
+
+    fun eggFreeFilterTapped(view: android.view.View) {
+        callFilter("egg_free", R.id.eggFreeFilter)
+    }
+
+    fun dairyFreeFilterTapped(view: android.view.View) {
+        callFilter("dairy_free", R.id.dairyFreeFilter)
+    }
+
+    fun nutFreeFilterTapped(view: android.view.View) {
+        callFilter("nut_free", R.id.nutFreeFilter)
+    }
+
+    fun shellfishFreeFilterTapped(view: android.view.View) {
+        callFilter("shellfish_free", R.id.shellfishFreeFilter)
+    }
+
+    fun vegetarianFilterTapped(view: android.view.View) {
+        callFilter("vegetarian", R.id.vegetarianFilter)
+    }
+
+    fun veganFilterTapped(view: android.view.View) {
+        callFilter("vegan", R.id.veganFilter)
+    }
+
 }
